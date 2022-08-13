@@ -1,0 +1,84 @@
+hot pepper:
+  flavors:
+    SWEET: -80
+    SAVORY: -80
+    SPICY: 100
+  description:
+  image: assets/images/pepper-rough.png
+mushroom:
+  flavors:
+    SPICY: -80
+    SWEET: -80
+    SAVORY: 100
+  description:
+  image: assets/images/mushroom rough.png
+sugar:
+  flavors:
+    SWEET: 100
+    SPICY: -80
+    SAVORY: -80
+  image: assets/images/sugar-rough.png
+  description:
+beetle:
+  flavors:
+    SPICY: 0
+    SAVORY: 50
+    SWEET: -80
+  description:
+  image: assets/images/bettle rough.png
+onion:
+  flavors:
+    SPICY: 50
+    SWEET: 0
+    SAVORY: -50
+  description:
+  image: assets/images/onion rough.png
+garlic:
+  flavors:
+    SPICY: 0
+    SWEET: 0
+    SAVORY: 50
+  description:
+  image: assets/images/garlic rough.png
+carrot:
+  flavors:
+    SPICY: 0
+    SWEET: 50
+    SAVORY: -50
+  description:
+  image: assets/images/carrot-rough.png
+ginger:
+  flavors:
+    SPICY: 80
+    SWEET: -50
+    SAVORY: -60
+  description:
+  image: assets/images/ginger-rough.png
+orange juice:
+  flavors:
+    SPICY: 50
+    SWEET: 80
+    SAVORY: -80
+  description:
+  image: assets/images/OJ-rough.png
+leek:
+  flavors:
+    SPICY: 0
+    SWEET: -50
+    SAVORY: 0
+  description:
+  image: assets/images/Leek-rough.png
+sweet potato:
+  flavors:
+    SPICY: -50
+    SWEET: 80
+    SAVORY: 0
+  description:
+  image: assets/images/sweet potato-rough.png
+squash:
+  flavors:
+    SPICY: -50
+    SWEET: 0
+    SAVORY: 0
+  description:
+  image: assets/images/squash-rough.png
