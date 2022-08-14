@@ -5,6 +5,7 @@ from image_manager import ImageManager
 import pygame
 import math
 import time
+from particle import PoofParticle, PanPoof, ReactionParticle, TintParticle
 
 
 class CustomerQueue:
@@ -22,8 +23,29 @@ class CustomerQueue:
 
     def serve_customer(self, flavor):
         served_customer = self.customers.pop(0)
-        served_customer.serve(flavor)
+        served_customer.serve(self.frame, flavor)
         self.served_customers.append(served_customer)
+        served_customer.plate_appear(self.frame)
+        self.frame.particles.append(ReactionParticle((served_customer.position + Pose((-150, -100))).get_position(), served_customer.happiness))
+        self.frame.fronticles.append(TintParticle(color=(255, 255, 255), opacity=128, duration=0.25))
+
+    def check_time(self):
+        if self.front_customer().state not in [c.WAITING, c.SPEAKING]:
+            return
+        if self.front_customer().time_left < -0.05:
+            self.frame.shake(30)
+            Customer.make_mistake()
+            self.frame.fronticles.append(TintParticle(color=(200, 0, 128), opacity=128, duration=0.4))
+            self.frame.fronticles.append(ReactionParticle((c.WINDOW_WIDTH//2, c.WINDOW_HEIGHT//2), 4))
+            served_customer = self.customers.pop(0)
+            self.served_customers.append(served_customer)
+            served_customer.update_happiness_surf(0)
+            served_customer.state = c.SERVED
+            self.frame.pot.empty()
+
+    def draw_plates(self, surface, offset=(0, 0)):
+        for customer in self.customers + self.served_customers:
+            customer.draw_plate(surface, offset=offset)
 
     def update(self, dt, events):
         for customer in self.customers + self.served_customers:
@@ -38,6 +60,8 @@ class CustomerQueue:
             self.front_customer().speak()
             self.frame.pot.preview.target_flavor_spread = self.front_customer().tolerance
             self.frame.pot.preview.update_goal_flavor(self.front_customer().desired_flavor)
+
+        self.check_time()
 
     def draw(self, surface, offset=(0, 0)):
         for customer in self.customers[::-1] + self.served_customers:
@@ -59,8 +83,13 @@ class Customer:
 
     SPEAK_FONT = None
     CHARS = {}
+    COUNT = 0
+
+    MISTAKE_HANDICAP = 0
 
     def __init__(self, position, queue, tolerance=1.0, desired_flavor = None):
+        Customer.COUNT += 1
+
         if not self.SPEAK_FONT:
             Customer.SPEAK_FONT = pygame.font.Font("assets/fonts/corbel.ttf", 24)
             Customer.CHARS = {char:Customer.SPEAK_FONT.render(char, 1, (0, 0, 0)) for char in c.PRINTABLES}
@@ -75,6 +104,8 @@ class Customer:
         self.talk_surf = ImageManager.load("assets/images/customer_speaking.png")
         self.wait_surf = ImageManager.load("assets/images/customer_waiting.png")
         self.happy_surf = ImageManager.load("assets/images/customer_served_happy.png")
+        self.okay_surf = ImageManager.load("assets/images/customer_served_okay.png")
+        self.unhappy_surf = ImageManager.load("assets/images/customer_served_bad.png")
         self.serve_surf = self.happy_surf
 
         self.state = c.QUEUED
@@ -90,13 +121,47 @@ class Customer:
 
         self.happiness = None
 
+        self.plate_visible = False
+        self.plate_position = Pose((c.WINDOW_WIDTH*0.7, c.WINDOW_HEIGHT*0.55))
+        self.plate = ImageManager.load("assets/images/plate.png")
+        self.plate = pygame.transform.scale(self.plate, (self.plate.get_width()*1280/1920, self.plate.get_height()*1280/1920))
+
+
+        time_scale = 0.2
+        self.time_bar = ImageManager.load("assets/images/time_bar.png")
+        self.time_bar_frame = ImageManager.load("assets/images/time_frame.png")
+        self.time_bar = pygame.transform.scale(self.time_bar, (self.time_bar.get_width() * time_scale, self.time_bar.get_height()*time_scale))
+        self.time_bar_frame = pygame.transform.scale(self.time_bar_frame, (self.time_bar_frame.get_width() * time_scale, self.time_bar_frame.get_height() * time_scale))
+        self.time_bar_scale = 0
+        self.clock = ImageManager.load("assets/images/clock.png")
+        self.clock = pygame.transform.scale(self.clock, (self.clock.get_width() * time_scale, self.clock.get_height() * time_scale))
+
+        self.time_left = 1
+        self.patience = self.get_patience()
+
+    def get_patience(self):
+        if Customer.COUNT == 1:
+            return 45
+        if Customer.COUNT == 2:
+            return 30
+        if Customer.COUNT == 3:
+            return 15
+        scaling = 6
+        return 15 * ((3+scaling)/(Customer.COUNT+scaling)) + Customer.MISTAKE_HANDICAP
+
+    @staticmethod
+    def make_mistake():
+        Customer.MISTAKE_HANDICAP += 10
+
     def get_dialog(self):
-        return "Could I get something that tastes like dirt?"
+        return "Could I get something that tastes like dirt? "*2
 
     def speak(self):
         self.state = c.SPEAKING
         self.since_spoken = 0
         self.window_target_alpha = 255
+
+        self.time_left = 1
 
     def stop_speaking(self):
         self.state = c.WAITING
@@ -115,11 +180,27 @@ class Customer:
         flavor[flavors[2]] = least
         return flavor
 
-    def serve(self, flavor):
+    def serve(self, frame, flavor):
         self.state = c.SERVED
         self.serve_surf = self.happy_surf
+        satisfaction = frame.pot.preview.flavor_in_range(flavor)
+        if satisfaction == 1:
+            self.serve_surf = self.okay_surf
+        if satisfaction == 0:
+            self.serve_surf = self.unhappy_surf
         self.happiness = self.queue.frame.pot.preview.flavor_in_range(flavor)
         self.queue.frame.happiness_flare(self.happiness)
+
+        Customer.MISTAKE_HANDICAP *= 0.5
+
+    def update_happiness_surf(self, satisfaction):
+        self.happiness = satisfaction
+        if satisfaction == 1:
+            self.serve_surf = self.okay_surf
+        if satisfaction == 0:
+            self.serve_surf = self.unhappy_surf
+        if satisfaction == 2:
+            self.serve_surf = self.happy_surf
 
     def at_target(self):
         return (self.target_position - self.position).magnitude() < 5
@@ -131,6 +212,12 @@ class Customer:
         if self.state == c.SERVED:
             self.target_position += self.velocity*dt
             self.velocity += Pose((5000, 0))*dt
+        # if self.state == c.SERVED and self.happiness == 0:
+        #     self.target_position.y += 250*dt
+        #     self.velocity += Pose((-2000, 0)) * dt
+        #     self.velocity += Pose((0, 0), 0)*dt
+
+        self.time_left -= 1/self.get_patience() * dt
 
         d = self.target_position - self.position
         self.position += d * dt * 5
@@ -146,6 +233,15 @@ class Customer:
             if self.window_alpha < self.window_target_alpha:
                 self.window_alpha = self.window_target_alpha
 
+        if self.plate_visible:
+            self.plate_position = Pose((self.position.x*1.4 - 500, c.WINDOW_HEIGHT*0.60))
+
+    def plate_appear(self, frame):
+        self.plate_visible = True
+        self.plate_position = Pose((self.position.x, c.WINDOW_HEIGHT*0.60))
+        for i in range(10):
+            frame.particles.append(PoofParticle(self.plate_position.get_position(), color=128))
+
     def draw(self, surface, offset=(0, 0)):
         surf = None
         if self.state == c.QUEUED:
@@ -157,6 +253,9 @@ class Customer:
         if self.state == c.SERVED:
             surf = self.serve_surf
 
+        if self.position.angle != 0:
+            surf = pygame.transform.rotate(surf, self.position.angle * 180/math.pi)
+
         w = surf.get_width()
         h = surf.get_height()
         x = self.position.x + offset[0] - w//2
@@ -166,13 +265,40 @@ class Customer:
         if self.window_alpha > 0:
             self.draw_dialog(surface, offset)
 
+        self.draw_patience_meter(surface, offset)
+
+    def draw_patience_meter(self, surface, offset=(0, 0)):
+
+        if not self.state == c.SPEAKING or self.state == c.WAITING:
+            return
+        x = self.position.x + offset[0] - 220
+        y = self.position.y + offset[1] - 150
+
+        surface.blit(self.time_bar_frame, (x, y))
+
+        width = self.time_left/1
+        if width > 0:
+            front = pygame.Surface((self.time_bar.get_width() * width, self.time_bar.get_height()))
+            front.fill((255, 0, 255))
+            front.blit(self.time_bar, (0, 0))
+            front.set_colorkey((255, 0, 255))
+            surface.blit(front, (x, y))
+
+        surface.blit(self.clock, (x - 40, y - 6))
+
+    def draw_plate(self, surface, offset=(0, 0)):
+        if self.plate_visible:
+            x = self.plate_position.x + offset[0] - self.plate.get_width()//2
+            y = self.plate_position.y + offset[1] - self.plate.get_height()//2
+            surface.blit((self.plate), (x, y))
+
     def draw_dialog(self, surface, offset=(0, 0)):
         self.window.set_alpha(self.window_alpha)
         surface.blit(self.window, (c.WINDOW_WIDTH - self.window.get_width(), 0))
 
-        x = c.WINDOW_WIDTH - 350
-        y = 18
-        w = 320
+        x = c.WINDOW_WIDTH - 450
+        y = 28
+        w = 420
         h = 80
         spacing = 30
         words = self.dialog.split(" ")

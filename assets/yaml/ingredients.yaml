@@ -3,7 +3,7 @@ hot pepper:
     SWEET: -80
     SAVORY: -80
     SPICY: 100
-  description:
+  description: "Caution: may cause burns."
   image: assets/images/papper final.png
   robot:
     - MAY CAUSE OVERHEATING
@@ -12,7 +12,7 @@ mushroom:
     SPICY: -80
     SWEET: -80
     SAVORY: 100
-  description:
+  description: A savory, earthy taste.
   image: assets/images/mushroom final.png
   robot:
     - PROVIDING FUNGUS
@@ -22,13 +22,13 @@ sugar:
     SPICY: -80
     SAVORY: -80
   image: assets/images/sugar final.png
-  description:
+  description: So sweet, it turns tea into sweet tea.
 beetle:
   flavors:
     SPICY: 0
     SAVORY: 50
     SWEET: -80
-  description:
+  description: A savory taste, with a little kick. Possibly illegal.
   image: assets/images/beetle final.png
   robot:
     - FOUND BUG, AWAITING FIX
@@ -43,9 +43,9 @@ onion:
   image: assets/images/onion final.png
 garlic:
   flavors:
-    SPICY: 0
-    SWEET: 0
-    SAVORY: 50
+    SPICY: -50
+    SWEET: 20
+    SAVORY: 100
   description:
   image: assets/images/garlic final.png
 carrot:

@@ -6,6 +6,7 @@ import math
 import time
 from flavor_preview import FlavorPreview
 from particle import FoodParticle
+from image_manager import ImageManager
 
 class SpiceRack:
 
@@ -61,6 +62,7 @@ class SpiceRack:
         self.update_quantities()
 
     def draw(self, surface, offset=(0, 0)):
+        offset = (0, 0)
         for entry in self.entries:
             entry.draw(surface, offset=offset)
 
@@ -113,6 +115,7 @@ class SpiceRack:
 class SpiceEntry:
 
     QUANTITY_FONT = None
+    DESCRIPTION_FONT = None
 
     def __init__(self, key, rack):
         self.surface = pygame.transform.scale(Ingredient.get_surf(key), rack.LARGE_RECT)
@@ -124,10 +127,19 @@ class SpiceEntry:
         self.target_scale = 0.5
         if not SpiceEntry.QUANTITY_FONT:
             SpiceEntry.QUANTITY_FONT = pygame.font.Font("assets/fonts/AllTheWayToTheSun.ttf", 25)
+        if not SpiceEntry.DESCRIPTION_FONT:
+            SpiceEntry.DESCRIPTION_FONT = pygame.font.Font("assets/fonts/corbel.ttf", 15)
         self.squash = 0
         self.surface = pygame.transform.scale(self.surface, self.rack.LARGE_RECT)
         self.preview = FlavorPreview(Ingredient.ingredient_dict[self.key]["flavors"],self.target_position.get_position(),radius=50)
         self.was_hovered = False
+        self.hover_back = ImageManager.load("assets/images/item_hover.png")
+        self.hover_back.set_alpha(150)
+
+        self.name_surf = SpiceEntry.QUANTITY_FONT.render(key.upper(), 1, (255, 255, 255))
+        self.description_chars = {char:SpiceEntry.DESCRIPTION_FONT.render(char, 1, (255, 255, 255)) for char in c.PRINTABLES}
+
+        self.taste_icon = ImageManager.load(c.FLAVOR_ICONS[Ingredient.primary_flavor(self.key)])
 
     def update(self, dt, events):
         self.position += (self.target_position - self.position)*dt*20
@@ -172,11 +184,12 @@ class SpiceEntry:
         return self.rack.get_quantity(self.key)
 
     def draw_quantity(self, surface, offset=(0, 0)):
-        return
-        surf = SpiceEntry.QUANTITY_FONT.render(f"{self.quantity()}", 1, (0, 0, 0))
-        w = surf.get_width()
-        h = surf.get_height()
-        x = self.position.x + offset[0] - self.width()//2
+        surf = self.taste_icon
+        scale = (self.scale*0.5 + 0.5) * 0.2
+        w = surf.get_width() * scale
+        h = surf.get_height() * scale
+        surf = pygame.transform.scale(surf, (w, h))
+        x = self.position.x + offset[0] - self.width()//2 + 5
         y = self.position.y + offset[1] + self.height()//2 - h
         surface.blit(surf, (x, y))
 
@@ -199,12 +212,63 @@ class SpiceEntry:
         y = self.position.y + offset[1] - h//2
 
         if self.hovered():
-            self.preview.draw(surface, offset)
+            self.draw_ingredient_preview(surface, offset=offset)
 
         scaled = pygame.transform.scale(self.surface, (w, h))
         surface.blit(scaled, (x, y))
         self.draw_quantity(surface, offset)
 
+    def draw_ingredient_preview(self, surface, offset=(0, 0)):
+        if self.preview.position.x == 0 or self.preview.position.y == 0:
+            return
+        w = self.hover_back.get_width()
+        h = self.hover_back.get_height()
+        x = self.preview.position.x + offset[0] - w //2
+        y = self.preview.position.y + offset[1] - h//2 - 30
+        surface.blit(self.hover_back, (x, y))
 
+        offset = (Pose(offset) + Pose((-70, -35))).get_position()
+        self.preview.draw(surface, offset)
+        surface.blit(self.name_surf, (x + 175 - self.name_surf.get_width()//2, y + 15))
+        self.draw_description(surface, offset)
+
+    def draw_description(self, surface, offset=(0, 0)):
+        w = 120
+        height = 50
+        spacing = 16
+
+        offset = (Pose(offset) + self.preview.position + Pose((50, -30))).get_position()
+
+        self.dialog = Ingredient.ingredient_dict[self.key]["description"] if "description" in Ingredient.ingredient_dict[self.key]  else "unknown ingredient"
+        if self.dialog is None:
+            self.dialog = "unknown ingredient"
+        words = self.dialog.split(" ")
+        lines = []
+        current_line = ""
+        line_width = 0
+        for word in words:
+            word_width = sum(self.description_chars[char].get_width() for char in word)
+            if line_width + word_width > w:
+                lines.append(current_line)
+                current_line = ""
+                line_width = 0
+
+            current_line += word + " "
+            line_width += word_width + self.description_chars[" "].get_width()
+        if current_line:
+            lines.append(current_line)
+
+        x0 = offset[0]
+        y0 = offset[1] + height / 2
+        y0 -= spacing * len(lines) / 2
+        for line in lines:
+            line_width = sum([self.description_chars[char].get_width() for char in line])
+            x = x0 - line_width // 2 + w // 2
+            for i, char in enumerate(line):
+                xp, yp = x, y0
+                yp += math.sin(time.time() * -10 + i * 0.9) * 1
+                surface.blit(self.description_chars[char], (xp, yp))
+                x += self.description_chars[char].get_width()
+            y0 += spacing
 
         #pygame.draw.rect(surface, (255, 0, 0), (x, y, w, h), 2)

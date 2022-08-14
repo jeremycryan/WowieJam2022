@@ -24,8 +24,8 @@ class Robot:
 
         self.frame = frame
         self.surf = ImageManager.load("assets/images/robot.png")
-        self.up_position = Pose((c.WINDOW_WIDTH * 0.06, c.WINDOW_HEIGHT * 0.5), 0)
-        self.down_position = Pose((c.WINDOW_WIDTH * 0.05, c.WINDOW_HEIGHT * 0.8), -math.pi/10)
+        self.up_position = Pose((c.WINDOW_WIDTH * 0.1, c.WINDOW_HEIGHT * 0.32), 0)
+        self.down_position = Pose((c.WINDOW_WIDTH * -0.2, c.WINDOW_HEIGHT * 0.3), math.pi/2)
         self.position = self.down_position.copy()
         self.target_position = self.up_position.copy()
         self.pop_up()
@@ -77,7 +77,7 @@ class Robot:
                 self.dialog_alpha = self.dialog_target_alpha
 
         if self.state == Robot.POPPING_UP:
-            if d.magnitude() < 5:
+            if d.magnitude() < 15:
                 self.popped_up()
 
         if self.state == Robot.POPPING_DOWN:
@@ -95,13 +95,14 @@ class Robot:
         self.frame.pot.add_ingredient(Ingredient.from_key(key))
         particle = FoodParticle(key, self.frame)
         particle.position = self.position
-        particle.velocity = Pose((400, -1500))
+        particle.velocity = Pose((500, 0))
         self.frame.add_particle(particle)
         self.randomize_dialog(key)
 
     def draw(self, surface, offset=(0, 0)):
         if self.dialog_alpha > 0:
-            self.draw_dialog(surface, offset)
+            pass
+            #self.draw_dialog(surface, offset)
 
         surf = pygame.transform.rotate(self.surf, self.position.angle*180/math.pi)
         w = surf.get_width()
@@ -111,6 +112,8 @@ class Robot:
         surface.blit(surf, (x, y))
 
     def draw_dialog(self, surface, offset=(0, 0)):
+        if self.dialog_alpha <= 0:
+            return
         self.dialog.set_alpha(self.dialog_alpha)
         surface.blit(self.dialog, (0, 0))
 

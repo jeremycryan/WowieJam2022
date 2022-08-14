@@ -43,8 +43,8 @@ class FoodParticle(Particle):
         self.food = True
 
         super().__init__(duration=5)
-        self.position = Pose((-160, c.WINDOW_HEIGHT//2), random.random()*360)
-        self.velocity = Pose((1200 + (random.random() - 0.5) * 500, -750 - random.random()*200), random.random()*math.pi/2 + math.pi/4)
+        self.position = Pose((200 + random.random() * 300, -100), random.random()*360)
+        self.velocity = Pose((0, 1000), random.random() * 10 - 5)
         self.acceleration = Pose((0, 5000))
         self.splattered = False
         self.frame = frame
@@ -57,14 +57,15 @@ class FoodParticle(Particle):
         surface.blit(surf, (x, y))
 
     def update(self, dt, events):
-        if self.position.y <= c.WINDOW_HEIGHT*0.60:
+        self.velocity += self.acceleration*dt
+        if self.position.y < c.WINDOW_HEIGHT*0.60:
             super().update(dt, events)
-        else:
+        if self.position.y > c.WINDOW_HEIGHT*0.6:
+            self.position.y = c.WINDOW_HEIGHT*0.6
             if not self.splattered:
                 self.splattered = True
                 for i in range(20):
                     self.frame.particles.append(SplatterParticle(self.position.get_position()))
-        self.velocity += self.acceleration*dt
 
 class PoofParticle(Particle):
     def __init__(self, position, color=255):
@@ -113,3 +114,51 @@ class SplatterParticle(Particle):
     def update(self, dt, events):
         super().update(dt, events)
         self.velocity.y += 4000*dt
+
+
+class ReactionParticle(Particle):
+
+    def __init__(self, position, score):
+        self.score = score
+        velocity = (0, -50)
+        super().__init__(position, velocity=velocity, duration=0.75)
+        if self.score == 0:
+            self.surf = ImageManager.load("assets/images/eww.png")
+        elif self.score == 1:
+            self.surf = ImageManager.load("assets/images/okay.png")
+        elif self.score == 2:
+            self.surf = ImageManager.load("assets/images/perfect.png")
+        else:
+            self.surf = ImageManager.load("assets/images/timesup.png")
+
+    def draw(self, surface, offset=(0, 0)):
+        if self.score == 2:
+            copy = pygame.transform.scale2x(self.surf)
+            w = copy.get_width()
+            h = copy.get_height()
+            x = self.position.x - w // 2 + offset[0]
+            y = self.position.y - h // 2 + offset[1]
+            copy.set_alpha(100 * (1 - self.through()))
+            surface.blit(copy, (x, y))
+
+        surf = self.surf
+        w = surf.get_width()
+        h = surf.get_height()
+        x = self.position.x - w//2 + offset[0]
+        y = self.position.y - h//2 + offset[1]
+        surf.set_alpha(255 * (1 - self.through()))
+        surface.blit(surf, (x, y))
+
+
+class TintParticle(Particle):
+
+    def __init__(self, duration=0.25, color=(0, 0, 0), opacity=255):
+        super().__init__(duration=duration)
+        surf = pygame.Surface((c.WINDOW_SIZE))
+        surf.fill((color))
+        self.surf = surf
+        self.opacity = opacity
+
+    def draw(self, surf, offset=(0, 0)):
+        self.surf.set_alpha((self.opacity - self.opacity*self.through()))
+        surf.blit(self.surf, (0, 0))

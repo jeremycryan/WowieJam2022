@@ -18,7 +18,7 @@ class FlavorPreview:
         w = 64 * radius/200
         h = 64 * radius/200
         self.you_are_here = pygame.transform.scale(self.you_are_here, (w, h))
-        self.here_shadow = pygame.Surface((20*radius//200, 20*radius//200))
+        self.here_shadow = pygame.Surface((14*radius//200, 14*radius//200))
         self.here_shadow.fill((255, 255, 255))
         self.here_shadow.set_colorkey((255, 255, 255))
         pygame.draw.ellipse(self.here_shadow,(0, 0, 0), self.here_shadow.get_rect())
@@ -30,10 +30,29 @@ class FlavorPreview:
         self.target_flavor = target_flavor.copy() if target_flavor else None
         self.target_flavor_spread = target_flavor_spread
         self.target_overlay = pygame.Surface((10, 10))
+        self.target_overlay.set_colorkey((0, 0, 0))
         self.goal_flavor = None
 
         self.target_overlay_alpha = 50
         self.target_target_overlay_alpha = 50
+
+        self.smarker = ImageManager.load("assets/images/small marker.png")
+       # self.smarker = pygame.transform.scale(self.smarker, (24, 24))
+
+    def marker_tinted(self, color):
+        surf = self.you_are_here.copy()
+        overlay = surf.copy()
+        overlay.fill(color)
+        lightness = 1 - (self.target_overlay_alpha)/50
+        if self.target_target_overlay_alpha != 50:
+            lightness = 1
+        if lightness > 0:
+            white = surf.copy()
+            white.fill((255, 255, 255))
+            white.set_alpha(255 * lightness)
+            overlay.blit(white, (0, 0))
+        surf.blit(overlay, (0, 0), special_flags=pygame.BLEND_MULT)
+        return surf
 
     def goal_flavor_pos(self):
         pos = Pose((0, 0))
@@ -59,6 +78,7 @@ class FlavorPreview:
         self.target_overlay = target_surf
         self.target_overlay.set_alpha(50)
         self.target_target_overlay_alpha = 50
+        self.target_overlay_alpha = 0
 
 
 
@@ -139,6 +159,9 @@ class FlavorPreview:
         self.target_target_overlay_alpha = 0
 
     def draw(self, surface, offset=(0, 0)):
+        if self.position.x == 0 or self.position.y == 0:
+            return
+
         position = self.position + Pose(offset)
         corners = [self.points[key] + position for key in c.FLAVORS]
         pygame.draw.polygon(surface, (255, 255, 255), [corner.get_position() for corner in corners])
@@ -161,11 +184,30 @@ class FlavorPreview:
                 surface.blit(icon, (x, y))
 
 
-        x = self.flavor_pos.x - self.here_shadow.get_width()//2
-        y = self.flavor_pos.y - self.here_shadow.get_height()//2
+        x = self.flavor_pos.x - self.here_shadow.get_width()//2 + offset[0]
+        y = self.flavor_pos.y - self.here_shadow.get_height()//2 + offset[1]
         self.here_shadow.set_alpha(100)
         surface.blit(self.here_shadow, (x, y))
 
-        x = self.flavor_pos.x - self.you_are_here.get_width()//2
-        y = self.flavor_pos.y - self.you_are_here.get_height() - math.sin(time.time()*3)**2 * 6
-        surface.blit(self.you_are_here, (x, y))
+        if self.radius > 100:
+            satisfaction = self.flavor_in_range(self.flavors)
+            if satisfaction == 0:
+                color = (255, 0, 0)
+            if satisfaction == 1:
+                color = (255, 255, 0)
+            if satisfaction == 2:
+                color = (0, 255, 0)
+            if not self.goal_flavor:
+                color = (255, 255, 255)
+            surf = self.marker_tinted(color)
+            x = self.flavor_pos.x - self.you_are_here.get_width()//2 + offset[0]
+            y = self.flavor_pos.y - self.you_are_here.get_height() - math.sin(time.time()*3)**2 * 6 + offset[1]
+            surface.blit(surf, (x, y))
+        else:
+            scale = 1 - math.sin(time.time() * 6)**2 * 0.3
+            w = 32 * scale
+            h = 32 * scale
+            x = self.flavor_pos.x -w //2 + offset[0]
+            y = self.flavor_pos.y - h//2 + offset[1]
+            smarker = pygame.transform.scale((self.smarker), (w, h))
+            surface.blit(smarker, (x, y))

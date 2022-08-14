@@ -13,9 +13,9 @@ class Pot:
         self.preview = FlavorPreview(self.flavors, (350, 250),radius=180)
         self.frame = frame
 
-        self.bowl_front = ImageManager.load("assets/images/bowl_front.png")
+        self.bowl_front = ImageManager.load("assets/images/pan front.png")
         self.bowl_front = pygame.transform.scale(self.bowl_front, (self.bowl_front.get_width() * c.WINDOW_WIDTH/1920 * 1.3, self.bowl_front.get_height() * c.WINDOW_HEIGHT/1280 * 1.3))
-        self.bowl_back = ImageManager.load("assets/images/bowl_back.png")
+        self.bowl_back = ImageManager.load("assets/images/pan back.png")
         self.bowl_back = pygame.transform.scale(self.bowl_back, (self.bowl_back.get_width() * c.WINDOW_WIDTH/1920 * 1.3, self.bowl_back.get_height() * c.WINDOW_HEIGHT/1280 * 1.3))
 
     def add_ingredient(self, ingredient):
@@ -42,8 +42,8 @@ class Pot:
         self.ingredient_count = 0
         self.preview.update_flavors(self.flavors)
         for particle in self.frame.particles[:]:
-            particle.destroy()
             if particle.food:
+                particle.destroy()
                 for i in range(10):
                     self.frame.particles.append(PanPoof(particle.position.get_position(),color=128))
         self.frame.robot.pop_up()
@@ -55,7 +55,7 @@ class Pot:
     def draw(self, surface, offset=(0, 0)):
         self.preview.draw(surface, offset)
 
-        surface.blit(self.bowl_back, (63 + offset[0], 415 + offset[1]))
+        surface.blit(self.bowl_back, (60 + offset[0], 410 + offset[1]))
 
         self.frame.draw_particles(surface, offset)
 
