@@ -4,20 +4,24 @@ hot pepper:
     SAVORY: -80
     SPICY: 100
   description:
-  image: assets/images/pepper-rough.png
+  image: assets/images/papper final.png
+  robot:
+    - MAY CAUSE OVERHEATING
 mushroom:
   flavors:
     SPICY: -80
     SWEET: -80
     SAVORY: 100
   description:
-  image: assets/images/mushroom rough.png
+  image: assets/images/mushroom final.png
+  robot:
+    - PROVIDING FUNGUS
 sugar:
   flavors:
     SWEET: 100
     SPICY: -80
     SAVORY: -80
-  image: assets/images/sugar-rough.png
+  image: assets/images/sugar final.png
   description:
 beetle:
   flavors:
@@ -25,60 +29,64 @@ beetle:
     SAVORY: 50
     SWEET: -80
   description:
-  image: assets/images/bettle rough.png
+  image: assets/images/beetle final.png
+  robot:
+    - FOUND BUG, AWAITING FIX
+    - THIS IS A BUG, NOT A FEATURE
+    - THIS IS FOOD, TRUST ME
 onion:
   flavors:
     SPICY: 50
     SWEET: 0
     SAVORY: -50
   description:
-  image: assets/images/onion rough.png
+  image: assets/images/onion final.png
 garlic:
   flavors:
     SPICY: 0
     SWEET: 0
     SAVORY: 50
   description:
-  image: assets/images/garlic rough.png
+  image: assets/images/garlic final.png
 carrot:
   flavors:
     SPICY: 0
     SWEET: 50
     SAVORY: -50
   description:
-  image: assets/images/carrot-rough.png
+  image: assets/images/carrot final.png
 ginger:
   flavors:
     SPICY: 80
     SWEET: -50
     SAVORY: -60
   description:
-  image: assets/images/ginger-rough.png
+  image: assets/images/ginger final.png
 orange juice:
   flavors:
     SPICY: 50
     SWEET: 80
     SAVORY: -80
   description:
-  image: assets/images/OJ-rough.png
+  image: assets/images/OJ Final.png
 leek:
   flavors:
     SPICY: 0
     SWEET: -50
     SAVORY: 0
   description:
-  image: assets/images/Leek-rough.png
+  image: assets/images/Leek final.png
 sweet potato:
   flavors:
     SPICY: -50
     SWEET: 80
     SAVORY: 0
   description:
-  image: assets/images/sweet potato-rough.png
+  image: assets/images/sweet potato final.png
 squash:
   flavors:
     SPICY: -50
     SWEET: 0
     SAVORY: 0
   description:
-  image: assets/images/squash-rough.png
+  image: assets/images/squash final.png

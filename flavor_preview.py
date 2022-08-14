@@ -32,6 +32,9 @@ class FlavorPreview:
         self.target_overlay = pygame.Surface((10, 10))
         self.goal_flavor = None
 
+        self.target_overlay_alpha = 50
+        self.target_target_overlay_alpha = 50
+
     def goal_flavor_pos(self):
         pos = Pose((0, 0))
         for flavor in c.FLAVORS:
@@ -55,6 +58,9 @@ class FlavorPreview:
         target_surf.set_colorkey((255, 255, 255))
         self.target_overlay = target_surf
         self.target_overlay.set_alpha(50)
+        self.target_target_overlay_alpha = 50
+
+
 
     def update_target_flavor(self, flavor):
         self.target_flavor = flavor.copy()
@@ -108,6 +114,15 @@ class FlavorPreview:
             self.flavor_pos = self.target_flavor_pos.copy()
         self.update_flavor_pos()
 
+        if self.target_overlay_alpha < self.target_target_overlay_alpha:
+            self.target_overlay_alpha += 160*dt
+            if self.target_overlay_alpha > self.target_target_overlay_alpha:
+                self.target_overlay_alpha = self.target_target_overlay_alpha
+        if self.target_overlay_alpha > self.target_target_overlay_alpha:
+            self.target_overlay_alpha -= 160*dt
+            if self.target_overlay_alpha < self.target_target_overlay_alpha:
+                self.target_overlay_alpha = self.target_target_overlay_alpha
+
     def set_position(self, position):
         self.position = Pose(position)
         self.update_flavor_pos()
@@ -120,17 +135,22 @@ class FlavorPreview:
             flavor_pos += self.points[key] * self.flavors[key]*0.01
         self.target_flavor_pos = flavor_pos
 
+    def clear_goal_vis(self):
+        self.target_target_overlay_alpha = 0
+
     def draw(self, surface, offset=(0, 0)):
         position = self.position + Pose(offset)
         corners = [self.points[key] + position for key in c.FLAVORS]
         pygame.draw.polygon(surface, (255, 255, 255), [corner.get_position() for corner in corners])
-        pygame.draw.line(surface, (0, 0, 0), corners[0].get_position(), corners[1].get_position(), 2)
-        pygame.draw.line(surface, (0, 0, 0), corners[2].get_position(), corners[1].get_position(), 2)
-        pygame.draw.line(surface, (0, 0, 0), corners[0].get_position(), corners[2].get_position(), 2)
+        pygame.draw.line(surface, (0, 0, 0), corners[0].get_position(), corners[1].get_position(), 3)
+        pygame.draw.line(surface, (0, 0, 0), corners[2].get_position(), corners[1].get_position(), 3)
+        pygame.draw.line(surface, (0, 0, 0), corners[0].get_position(), corners[2].get_position(), 3)
 
         x = position.x - self.radius * math.sqrt(3)/2
         y = position.y - self.radius
-        surface.blit(self.target_overlay, (x, y))
+        if self.target_overlay_alpha > 0:
+            self.target_overlay.set_alpha(self.target_overlay_alpha)
+            surface.blit(self.target_overlay, (x, y))
 
         if self.radius > 100:
             for key in c.FLAVORS:

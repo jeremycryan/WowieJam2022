@@ -6,6 +6,7 @@ from image_manager import ImageManager
 from bell import Bell
 from customer_queue import CustomerQueue
 from ingredient import Ingredient
+from robot import Robot
 
 class Frame:
     def __init__(self, game):
@@ -27,7 +28,7 @@ class Frame:
 
 class GameFrame(Frame):
     def __init__(self, game):
-        self.pot = Pot()
+        self.pot = Pot(self)
         self.rack = SpiceRack((c.WINDOW_WIDTH*0.5, c.WINDOW_HEIGHT - 120), self.pot)
         self.rack.add_ingredients({
             key: 3 for key in Ingredient.ingredient_dict
@@ -44,12 +45,22 @@ class GameFrame(Frame):
         self.background = ImageManager.load("assets/images/background.png")
 
         self.hfont = pygame.font.Font("assets/fonts/corbel.ttf", 20)
-        self.hsurf = self.hfont.render("SERVE",1,(0, 0, 0))
+        self.hsurf = self.hfont.render("SERVE", 1, (0, 0, 0))
 
+        self.particles = []
+        self.robot = Robot(self)
+
+    def add_particle(self, particle):
+        self.particles.append(particle)
+
+    def draw_particles(self, surface, offset=(0, 0)):
+        for particle in self.particles:
+            particle.draw(surface, offset)
 
     def draw(self, surface, offset=(0, 0)):
         surface.blit(self.background, (0, 0))
         self.queue.draw(surface, offset)
+        self.robot.draw(surface, offset=(0, 0))
         surface.blit(self.counter, (0, c.WINDOW_HEIGHT - self.counter.get_height()))
         surface.blit(self.item_counter, (0, c.WINDOW_HEIGHT - self.item_counter.get_height()))
         self.bell.draw(surface, offset)
@@ -69,6 +80,11 @@ class GameFrame(Frame):
                     "sugar": 1,
                 })
         self.bell.update(dt, events)
+        for particle in self.particles[:]:
+            particle.update(dt, events)
+            if particle.destroyed:
+                self.particles.remove(particle)
+        self.robot.update(dt, events)
 
     def happiness_flare(self, happiness):
         self.hsurf = self.hfont.render(f"HAPPINESS: {happiness}",1,(0, 0, 0))

@@ -5,11 +5,12 @@ import pygame
 import math
 import time
 from flavor_preview import FlavorPreview
+from particle import FoodParticle
 
 class SpiceRack:
 
     X_SPACING = 0
-    SMALL_RECT = (80, 80)
+    SMALL_RECT = (90, 90)
     LARGE_RECT = (200, 200)
 
     def __init__(self, pos=(0, 0), pot=None):
@@ -83,6 +84,7 @@ class SpiceRack:
 
     def add_to_pot(self, key):
         self.pot.add_ingredient(Ingredient.from_key(key))
+        self.pot.frame.add_particle(FoodParticle(key, self.pot.frame))
 
     def set_target_positions(self, snap=()):
         num = len(self.entries)
@@ -146,7 +148,7 @@ class SpiceEntry:
         if self.hovered():
             self.preview.update(dt, events)
             if self.was_hovered:
-                self.preview.set_position((self.target_position.copy() + Pose((0, -90))).get_position())
+                self.preview.set_position((self.target_position.copy() + Pose((0, -120))).get_position())
             else:
                 pass # play sound, etc
             for event in events:
@@ -157,7 +159,7 @@ class SpiceEntry:
 
     def add_to_pot(self):
         self.squash = 1
-        self.rack.ingredients[self.key] -= 1
+        #self.rack.ingredients[self.key] -= 1
         self.rack.add_to_pot(self.key)
 
     def width(self):
@@ -170,6 +172,7 @@ class SpiceEntry:
         return self.rack.get_quantity(self.key)
 
     def draw_quantity(self, surface, offset=(0, 0)):
+        return
         surf = SpiceEntry.QUANTITY_FONT.render(f"{self.quantity()}", 1, (0, 0, 0))
         w = surf.get_width()
         h = surf.get_height()

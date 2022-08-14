@@ -3,6 +3,7 @@ from primitives import Pose
 import pygame
 import math
 import constants as c
+from robot import Robot
 
 class Bell:
 
@@ -31,6 +32,8 @@ class Bell:
 
     def serve(self):
         if not self.frame.queue.front_customer().state in (c.WAITING, c.SPEAKING):
+            return
+        if not self.frame.robot.state in (Robot.DOWN,):
             return
         self.squash = 1
         self.frame.queue.serve_customer(self.frame.pot.flavors)
