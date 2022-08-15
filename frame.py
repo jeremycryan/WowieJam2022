@@ -74,6 +74,10 @@ class GameFrame(Frame):
 
         self.ingredients_used = {}
 
+        pygame.mixer.music.load("assets/sounds/track_main.mp3")
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(0.35)
+
     def lose_life(self):
         self.lives -= 1
         self.fronticles.append(LifeParticle(lives=self.lives))
@@ -237,6 +241,9 @@ class Stats(Frame):
         self.enter = self.enter_font.render("Press Enter to try again", 1, (255, 255, 255))
         self.enter.set_alpha(128)
 
+        pygame.mixer.music.load("assets/sounds/track_title_game over.mp3")
+        pygame.mixer.music.play(-1)
+
 
 
     def add_label_value(self, label, value):
@@ -271,6 +278,7 @@ class Stats(Frame):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     self.shade_target = 255
+                    pygame.mixer.music.fadeout(400)
 
     def draw(self, surface, offset=(0, 0)):
 
@@ -351,6 +359,9 @@ class Title(Frame):
         title = title_font.render("BOT APPETIT", 1, (255, 255, 255))
         self.title = title
 
+        pygame.mixer.music.load("assets/sounds/track_title_game over.mp3")
+        pygame.mixer.music.play(-1)
+
     def update(self, dt, events):
         if self.shade_target < self.shade_alpha:
             self.shade_alpha -= 500*dt
@@ -368,6 +379,7 @@ class Title(Frame):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     self.shade_target = 255
+                    pygame.mixer.music.fadeout(400)
 
 
 

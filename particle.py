@@ -184,7 +184,7 @@ class LifeParticle(Particle):
         self.banner.set_alpha(128)
 
         self.buzzer = SoundManager.load("assets/sounds/end buzzer.wav")
-        self.buzzer.set_volume(0.3)
+        self.buzzer.set_volume(0.2)
         if self.lives < 0:
             self.buzzer.play()
 
