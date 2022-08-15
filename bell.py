@@ -5,6 +5,8 @@ import math
 import constants as c
 from robot import Robot
 
+from sound_manager import SoundManager
+
 class Bell:
 
     def __init__(self, position, frame):
@@ -13,6 +15,9 @@ class Bell:
         self.position = Pose(position)
         self.frame = frame
         self.squash = 0
+
+        self.ding_sound = SoundManager.load("assets/sounds/bell ding!.wav")
+        self.ding_sound.set_volume(0.3)
 
     def width(self):
         return self.surf.get_width()
@@ -40,6 +45,7 @@ class Bell:
         self.frame.queue.serve_customer(self.frame.pot.flavors)
         self.frame.pot.empty()
         self.frame.shake(20)
+        self.ding_sound.play()
 
 
     def draw(self, surface, offset=(0, 0)):

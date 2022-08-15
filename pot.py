@@ -5,6 +5,8 @@ import pygame
 
 import constants as c
 from particle import PanPoof
+from sound_manager import SoundManager
+
 
 class Pot:
     def __init__(self, frame):
@@ -17,6 +19,9 @@ class Pot:
         self.bowl_front = pygame.transform.scale(self.bowl_front, (self.bowl_front.get_width() * c.WINDOW_WIDTH/1920 * 1.3, self.bowl_front.get_height() * c.WINDOW_HEIGHT/1280 * 1.3))
         self.bowl_back = ImageManager.load("assets/images/pan back.png")
         self.bowl_back = pygame.transform.scale(self.bowl_back, (self.bowl_back.get_width() * c.WINDOW_WIDTH/1920 * 1.3, self.bowl_back.get_height() * c.WINDOW_HEIGHT/1280 * 1.3))
+
+        self.poof_noise = SoundManager.load("assets/sounds/order poof away.wav")
+        self.poof_noise.set_volume(0.3)
 
     def add_ingredient(self, ingredient):
         for flavor in self.flavors:
@@ -48,6 +53,7 @@ class Pot:
                     self.frame.particles.append(PanPoof(particle.position.get_position(),color=128))
         self.frame.robot.pop_up()
         self.preview.clear_goal_vis()
+        self.poof_noise.play()
 
     def update(self, dt, events):
         self.preview.update(dt, events)

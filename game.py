@@ -9,16 +9,20 @@ from image_manager import ImageManager
 class Game:
     def __init__(self):
         pygame.init()
+        pygame.mixer.set_num_channels(16)
         SoundManager.init()
         ImageManager.init()
         self.screen = pygame.display.set_mode((c.WINDOW_SIZE))
         pygame.display.set_caption(c.CAPTION)
 
         self.clock = pygame.time.Clock()
+
+        self.lvs = [("SCORE", 0)]
+
         self.main()
 
     def main(self):
-        current_frame = f.GameFrame(self)
+        current_frame = f.Title(self)
         current_frame.load()
         self.clock.tick(60)
 

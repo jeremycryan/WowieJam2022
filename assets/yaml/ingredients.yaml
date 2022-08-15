@@ -39,54 +39,54 @@ onion:
     SPICY: 50
     SWEET: 0
     SAVORY: -50
-  description:
+  description: A mild root with a bit of spice.
   image: assets/images/onion final.png
 garlic:
   flavors:
     SPICY: -50
     SWEET: 20
     SAVORY: 100
-  description:
+  description: Too savory for vampires' liking.
   image: assets/images/garlic final.png
 carrot:
   flavors:
     SPICY: 0
     SWEET: 50
     SAVORY: -50
-  description:
+  description: A mild root with a hint of sweetness.
   image: assets/images/carrot final.png
 ginger:
   flavors:
     SPICY: 80
     SWEET: -50
     SAVORY: -60
-  description:
+  description: A gnarled, spicy root.
   image: assets/images/ginger final.png
 orange juice:
   flavors:
     SPICY: 50
     SWEET: 80
     SAVORY: -80
-  description:
+  description: Mostly sweet, with a little kick. Glass included.
   image: assets/images/OJ Final.png
 leek:
   flavors:
     SPICY: 0
     SWEET: -50
     SAVORY: 0
-  description:
+  description: Counteracts sweet flavors. It looks leeky.
   image: assets/images/Leek final.png
 sweet potato:
   flavors:
     SPICY: -50
     SWEET: 80
     SAVORY: 0
-  description:
+  description: It's sweet and savory. And not actually a potato!
   image: assets/images/sweet potato final.png
 squash:
   flavors:
     SPICY: -50
     SWEET: 0
     SAVORY: 0
-  description:
+  description: A mild flavor that counteracts spice.
   image: assets/images/squash final.png

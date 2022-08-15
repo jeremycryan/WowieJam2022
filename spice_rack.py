@@ -7,6 +7,7 @@ import time
 from flavor_preview import FlavorPreview
 from particle import FoodParticle
 from image_manager import ImageManager
+from sound_manager import SoundManager
 
 class SpiceRack:
 
@@ -21,6 +22,10 @@ class SpiceRack:
         self.entries = []
         self.initialize_entries()
         self.pot = pot
+
+        self.click_sound = SoundManager.load("assets/sounds/item click.wav")
+        self.hover_sound = SoundManager.load("assets/sounds/item hover.wav")
+        self.hover_sound.set_volume(0.5)
 
     def hovered(self):
         for entry in self.entries:
@@ -87,6 +92,7 @@ class SpiceRack:
     def add_to_pot(self, key):
         self.pot.add_ingredient(Ingredient.from_key(key))
         self.pot.frame.add_particle(FoodParticle(key, self.pot.frame))
+        self.click_sound.play()
 
     def set_target_positions(self, snap=()):
         num = len(self.entries)
@@ -100,6 +106,7 @@ class SpiceRack:
             item.target_position = Pose((x, self.position.y))
             if item.key != self.hovered():
                 item.target_position += Pose((math.sin(i * 0.8 + time.time() *4), math.cos(i * 0.8 + time.time() * 4))) * 0
+
             item.target_scale = self.SMALL_RECT[0]/self.LARGE_RECT[0]
             if item.key == self.hovered():
                 item.target_scale = 1
@@ -134,7 +141,7 @@ class SpiceEntry:
         self.preview = FlavorPreview(Ingredient.ingredient_dict[self.key]["flavors"],self.target_position.get_position(),radius=50)
         self.was_hovered = False
         self.hover_back = ImageManager.load("assets/images/item_hover.png")
-        self.hover_back.set_alpha(150)
+        self.hover_back.set_alpha(175)
 
         self.name_surf = SpiceEntry.QUANTITY_FONT.render(key.upper(), 1, (255, 255, 255))
         self.description_chars = {char:SpiceEntry.DESCRIPTION_FONT.render(char, 1, (255, 255, 255)) for char in c.PRINTABLES}
@@ -162,7 +169,7 @@ class SpiceEntry:
             if self.was_hovered:
                 self.preview.set_position((self.target_position.copy() + Pose((0, -120))).get_position())
             else:
-                pass # play sound, etc
+                self.rack.hover_sound.play()
             for event in events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
@@ -173,6 +180,12 @@ class SpiceEntry:
         self.squash = 1
         #self.rack.ingredients[self.key] -= 1
         self.rack.add_to_pot(self.key)
+
+        d = self.rack.pot.frame.ingredients_used
+        if not self.key in d:
+            d[self.key] = 1
+        else:
+            d[self.key] += 1
 
     def width(self):
         return self.scale * self.surface.get_width()
@@ -259,7 +272,7 @@ class SpiceEntry:
             lines.append(current_line)
 
         x0 = offset[0]
-        y0 = offset[1] + height / 2
+        y0 = offset[1] + height / 2 + 5
         y0 -= spacing * len(lines) / 2
         for line in lines:
             line_width = sum([self.description_chars[char].get_width() for char in line])

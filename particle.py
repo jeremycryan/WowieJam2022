@@ -6,6 +6,9 @@ import math
 import random
 import pygame
 
+from sound_manager import SoundManager
+
+
 class Particle:
 
     food = False
@@ -48,6 +51,9 @@ class FoodParticle(Particle):
         self.acceleration = Pose((0, 5000))
         self.splattered = False
         self.frame = frame
+        self.plops = [SoundManager.load(f"assets/sounds/item plop_{x}.wav") for x in range(1, 15)]
+        for plop in self.plops:
+            plop.set_volume(0.7)
 
     def draw(self, surface, offset=(0, 0)):
         surf = pygame.transform.rotate(self.surf, self.position.angle*180/math.pi)
@@ -64,6 +70,7 @@ class FoodParticle(Particle):
             self.position.y = c.WINDOW_HEIGHT*0.6
             if not self.splattered:
                 self.splattered = True
+                random.choice(self.plops).play()
                 for i in range(20):
                     self.frame.particles.append(SplatterParticle(self.position.get_position()))
 
@@ -162,3 +169,63 @@ class TintParticle(Particle):
     def draw(self, surf, offset=(0, 0)):
         self.surf.set_alpha((self.opacity - self.opacity*self.through()))
         surf.blit(self.surf, (0, 0))
+
+
+class LifeParticle(Particle):
+    FONT = None
+
+    def __init__(self, duration=1, lives=3):
+        super().__init__(duration=duration)
+        self.full = ImageManager.load("assets/images/life.png")
+        self.empty = ImageManager.load("assets/images/life_empty.png")
+        self.lives = lives
+        self.banner = pygame.Surface((c.WINDOW_WIDTH, 1))
+        self.banner.fill((0, 0, 0))
+        self.banner.set_alpha(128)
+
+        self.buzzer = SoundManager.load("assets/sounds/end buzzer.wav")
+        self.buzzer.set_volume(0.3)
+        if self.lives < 0:
+            self.buzzer.play()
+
+        if not LifeParticle.FONT:
+            LifeParticle.FONT = pygame.font.Font("assets/fonts/AllTheWayToTheSun.ttf", 55)
+
+
+        if self.lives < 0:
+            self.text = LifeParticle.FONT.render("GAME OVER!", 1, (255, 255, 255))
+        else:
+            self.text = LifeParticle.FONT.render("LIFE LOST!", 1, (255, 255, 255))
+
+    def draw(self, surf, offset=(0, 0)):
+
+
+        banner = pygame.transform.scale(self.banner, (c.WINDOW_WIDTH, min(200, 800*(1-self.through()))))
+        surf.blit(banner, (c.WINDOW_WIDTH//2 - banner.get_width()//2, c.WINDOW_HEIGHT//2 - banner.get_height()//2))
+
+        if self.through() < 0.75:
+            alpha = 255
+        else:
+            alpha = (1 - (self.through()-0.75)/0.25)**0.5 * 255
+        yoff = 57
+        if self.lives < 0:
+            yoff = 0
+        self.text.set_alpha(alpha)
+        surf.blit(self.text, (c.WINDOW_WIDTH//2 - self.text.get_width()//2, c.WINDOW_HEIGHT//2 - self.text.get_height()//2 - yoff))
+
+        if self.lives<0:
+            return
+
+        spacing = 20
+        width = self.full.get_width() * 3 + spacing * 2
+        x = c.WINDOW_WIDTH//2 - width//2
+        y = c.WINDOW_HEIGHT//2 - self.full.get_height()//2 + 30
+
+        self.full.set_alpha(alpha)
+        self.empty.set_alpha(alpha)
+        for i in range(3)[::-1]:
+            if i >= (3 - self.lives):
+                surf.blit(self.full, (x, y))
+            else:
+                surf.blit(self.empty, (x, y))
+            x += spacing + self.full.get_width()

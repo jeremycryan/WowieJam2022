@@ -8,6 +8,9 @@ from ingredient import Ingredient
 import random
 import time
 
+from sound_manager import SoundManager
+
+
 class Robot:
     POPPING_UP = 0
     UP = 1
@@ -35,6 +38,12 @@ class Robot:
         self.dialog_target_alpha = 0
         self.dialog_text = "TASTE ANALYSIS SAYS YUM"
 
+        self.sounds = [
+            SoundManager.load(f"assets/sounds/robot dialogue_{x}.wav") for x in range(1, 8) if x != 6
+        ]
+        for sound in self.sounds:
+            sound.set_volume(0.15)
+
 
 
     def pop_up(self):
@@ -55,6 +64,8 @@ class Robot:
         self.add_ingredient()
 
     def pop_down(self):
+        if self.state == Robot.DOWN:
+            return
         self.state = Robot.POPPING_DOWN
         self.target_position = self.down_position.copy()
 
@@ -62,6 +73,7 @@ class Robot:
     def popped_down(self):
         self.state = Robot.DOWN
         self.dialog_target_alpha = 255
+        random.choice(self.sounds).play()
 
     def update(self, dt, events):
         d = self.target_position - self.position

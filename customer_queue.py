@@ -6,6 +6,7 @@ import pygame
 import math
 import time
 from particle import PoofParticle, PanPoof, ReactionParticle, TintParticle
+from sound_manager import SoundManager
 
 
 class CustomerQueue:
@@ -14,6 +15,40 @@ class CustomerQueue:
         self.customers = []
         self.served_customers = []
         self.frame = frame
+
+        self.perfect_sounds = [SoundManager.load(f"assets/sounds/grade_PERFECT(0)_{x}.wav") for x in range(1, 2)]
+        for sound in self.perfect_sounds:
+            sound.set_volume(0.6)
+        self.ok_sounds = [SoundManager.load(f"assets/sounds/grade_OK_{x}.wav") for x in range(1, 4)]
+        self.eww_sounds = [SoundManager.load(f"assets/sounds/grade_EW_{x}.wav") for x in range(1, 5)]
+        for sound in self.eww_sounds:
+            sound.set_volume(0.5)
+        self.reaction_sound_dict = {2: self.perfect_sounds, 1: self.ok_sounds, 0: self.eww_sounds}
+        self.sounds = [SoundManager.load(f"assets/sounds/customer voice_{x}.wav") for x in range(1, 11)]
+        for i, sound in enumerate(self.sounds):
+            num = i+1
+            if num == 1:
+                sound.set_volume(1)
+                continue
+            if num==2:
+                sound.set_volume(0.5)
+                continue
+            if num==3:
+                sound.set_volume(0.15)
+                continue
+            if num==4:
+                sound.set_volume(0.5)
+                continue
+            if num ==5:
+                sound.set_volume(1.0)
+                continue
+            if num==7:
+                sound.set_volume(0.4)
+                continue
+            if num==6:
+                sound.set_volume(0.15)
+            sound.set_volume(0.25)
+        self.sounds = self.sounds[:7] + [self.sounds[-1]]
 
     def has_customers(self):
         return len(self.customers) > 0
@@ -27,7 +62,20 @@ class CustomerQueue:
         self.served_customers.append(served_customer)
         served_customer.plate_appear(self.frame)
         self.frame.particles.append(ReactionParticle((served_customer.position + Pose((-150, -100))).get_position(), served_customer.happiness))
-        self.frame.fronticles.append(TintParticle(color=(255, 255, 255), opacity=128, duration=0.25))
+        random.choice(self.reaction_sound_dict[served_customer.happiness]).play()
+        if served_customer.happiness > 0:
+            self.frame.fronticles.append(TintParticle(color=(255, 255, 255), opacity=128, duration=0.25))
+        else:
+            self.frame.bad_serve()
+        self.frame.num_served += 1
+        if served_customer.happiness == 0:
+            rate = 1
+        elif served_customer.happiness == 1:
+            rate = 3
+        elif served_customer.happiness == 2:
+            rate = 5
+        self.frame.total_rating += rate
+        self.frame.total_time_save += served_customer.time_left
 
     def check_time(self):
         if self.front_customer().state not in [c.WAITING, c.SPEAKING]:
@@ -36,12 +84,13 @@ class CustomerQueue:
             self.frame.shake(30)
             Customer.make_mistake()
             self.frame.fronticles.append(TintParticle(color=(200, 0, 128), opacity=128, duration=0.4))
-            self.frame.fronticles.append(ReactionParticle((c.WINDOW_WIDTH//2, c.WINDOW_HEIGHT//2), 4))
+            self.frame.fronticles.append(ReactionParticle((c.WINDOW_WIDTH//2, c.WINDOW_HEIGHT//2 - 160), 4))
             served_customer = self.customers.pop(0)
             self.served_customers.append(served_customer)
             served_customer.update_happiness_surf(0)
             served_customer.state = c.SERVED
             self.frame.pot.empty()
+            self.frame.lose_life()
 
     def draw_plates(self, surface, offset=(0, 0)):
         for customer in self.customers + self.served_customers:
@@ -83,7 +132,7 @@ class Customer:
 
     SPEAK_FONT = None
     CHARS = {}
-    COUNT = 0
+    COUNT = -2
 
     MISTAKE_HANDICAP = 0
 
@@ -141,20 +190,49 @@ class Customer:
 
     def get_patience(self):
         if Customer.COUNT == 1:
-            return 45
+            return 120
         if Customer.COUNT == 2:
-            return 30
+            return 60
         if Customer.COUNT == 3:
-            return 15
-        scaling = 6
-        return 15 * ((3+scaling)/(Customer.COUNT+scaling)) + Customer.MISTAKE_HANDICAP
+            return 30
+        scaling = 8
+        return 20 * ((3+scaling)/(Customer.COUNT+scaling)) + Customer.MISTAKE_HANDICAP
 
     @staticmethod
     def make_mistake():
         Customer.MISTAKE_HANDICAP += 10
 
     def get_dialog(self):
-        return "Could I get something that tastes like dirt? "*2
+        if self.desired_flavor[c.SWEET] > 80:
+            lines = [
+                "I want something so sweet my dentist can taste it.",
+                "Your sweetest dish, please."
+            ]
+        elif self.desired_flavor[c.SWEET] > 50:
+            lines = [
+                "I want something sweet... but not too sweet.",
+                "I have a bit of a sweet tooth today."
+            ]
+        elif self.desired_flavor[c.SPICY] > 80:
+            lines = [
+                "Make me cry.",
+                "Hit me with the spiciest dish you have. I can take it.",
+                "I want something that lights my mouth on fire and causes me physical pain. Do you have anything like that?",
+            ]
+        elif self.desired_flavor[c.SPICY] > 50:
+            lines = [
+                "Give me something spicy, but don't go overboard.",
+            ]
+        elif self.desired_flavor[c.SAVORY] > 50:
+            lines = [
+                "I'm in the mood for something savory today.",
+            ]
+        else:
+            lines = [
+                "I'm not looking for anything too extreme.",
+                "Give me something on the milder side."
+            ]
+        return random.choice(lines)
 
     def speak(self):
         self.state = c.SPEAKING
@@ -162,6 +240,7 @@ class Customer:
         self.window_target_alpha = 255
 
         self.time_left = 1
+        random.choice(self.queue.sounds).play()
 
     def stop_speaking(self):
         self.state = c.WAITING
