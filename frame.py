@@ -243,6 +243,7 @@ class Stats(Frame):
 
         pygame.mixer.music.load("assets/sounds/track_title_game over.mp3")
         pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(1.0)
 
 
 
@@ -361,6 +362,7 @@ class Title(Frame):
 
         pygame.mixer.music.load("assets/sounds/track_title_game over.mp3")
         pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(1.0)
 
     def update(self, dt, events):
         if self.shade_target < self.shade_alpha:
