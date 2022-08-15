@@ -20,6 +20,8 @@ class CustomerQueue:
         for sound in self.perfect_sounds:
             sound.set_volume(0.6)
         self.ok_sounds = [SoundManager.load(f"assets/sounds/grade_OK_{x}.wav") for x in range(1, 4)]
+        for sound in self.ok_sounds:
+            sound.set_volume(2)
         self.eww_sounds = [SoundManager.load(f"assets/sounds/grade_EW_{x}.wav") for x in range(1, 5)]
         for sound in self.eww_sounds:
             sound.set_volume(0.5)
@@ -188,6 +190,8 @@ class Customer:
         self.time_left = 1
         self.patience = self.get_patience()
 
+        self.bag_take = SoundManager.load("assets/sounds/bag take.wav")
+
     def get_patience(self):
         if Customer.COUNT == 1:
             return 120
@@ -271,6 +275,7 @@ class Customer:
         self.queue.frame.happiness_flare(self.happiness)
 
         Customer.MISTAKE_HANDICAP *= 0.5
+        self.bag_take.play()
 
     def update_happiness_surf(self, satisfaction):
         self.happiness = satisfaction
