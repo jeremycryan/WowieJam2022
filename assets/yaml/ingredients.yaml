@@ -16,6 +16,7 @@ mushroom:
   image: assets/images/mushroom final.png
   robot:
     - PROVIDING FUNGUS
+    - SEARCHING 'WHAT IS UMAMI REDDIT'
 sugar:
   flavors:
     SWEET: 100
@@ -23,6 +24,8 @@ sugar:
     SAVORY: -80
   image: assets/images/sugar final.png
   description: So sweet, it turns tea into sweet tea.
+  robot:
+    - SUGAR IS GOOD FOR YOUR HUMAN SOUL
 beetle:
   flavors:
     SPICY: 0
@@ -41,6 +44,8 @@ onion:
     SAVORY: -50
   description: A mild root with a bit of spice.
   image: assets/images/onion final.png
+  robot:
+    - ONIONS ARE THE BEST VEGETABLE
 garlic:
   flavors:
     SPICY: -50
@@ -48,6 +53,8 @@ garlic:
     SAVORY: 100
   description: Too savory for vampires' liking.
   image: assets/images/garlic final.png
+  robot:
+    - SEARCHING 'WHAT IS UMAMI REDDIT'
 carrot:
   flavors:
     SPICY: 0
@@ -69,6 +76,9 @@ orange juice:
     SAVORY: -80
   description: Mostly sweet, with a little kick. Glass included.
   image: assets/images/OJ Final.png
+  robot:
+    - ORANGE JUICE IS THE BEST VEGETABLE
+    - JUST LIKE MOTHER USED TO MAKE
 leek:
   flavors:
     SPICY: 0
@@ -83,6 +93,8 @@ sweet potato:
     SAVORY: 0
   description: It's sweet and savory. And not actually a potato!
   image: assets/images/sweet potato final.png
+  robot:
+    - SUGAR IS GOOD FOR YOUR HUMAN SOUL
 squash:
   flavors:
     SPICY: -50

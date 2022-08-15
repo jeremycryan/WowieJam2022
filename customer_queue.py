@@ -211,7 +211,8 @@ class Customer:
         if self.desired_flavor[c.SWEET] > 80:
             lines = [
                 "I want something so sweet my dentist can taste it.",
-                "Your sweetest dish, please."
+                "Your sweetest dish, please.",
+                "I'm going for the cavity world record!",
             ]
         elif self.desired_flavor[c.SWEET] > 50:
             lines = [
@@ -223,10 +224,19 @@ class Customer:
                 "Make me cry.",
                 "Hit me with the spiciest dish you have. I can take it.",
                 "I want something that lights my mouth on fire and causes me physical pain. Do you have anything like that?",
+                "Singe my tongue, please.",
             ]
         elif self.desired_flavor[c.SPICY] > 50:
             lines = [
                 "Give me something spicy, but don't go overboard.",
+                "I don't want to remember this meal tomorrow morning.",
+                "Gimme some of that spice!",
+            ]
+        elif self.desired_flavor[c.SAVORY] > 80:
+            lines = [
+                "Umami? I barely know me.",
+                "Slaughter me with savory.",
+                "I want to feel what Atlas felt but on my tongue.",
             ]
         elif self.desired_flavor[c.SAVORY] > 50:
             lines = [
@@ -236,6 +246,9 @@ class Customer:
             lines = [
                 "I'm not looking for anything too extreme.",
                 "Give me something on the milder side."
+                "Yeah... I burnt the turkey.",
+                "Whoah, you guys sell food here?",
+                "Yeah, I'm on a food-only diet."
             ]
         return random.choice(lines)
 

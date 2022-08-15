@@ -53,9 +53,10 @@ class Robot:
 
     def randomize_dialog(self, key):
         dialogs = c.ROBOT_DIALOG
-        dialogs += ("I HAVE PROVIDED YOU "+key.upper(),)*5
+        dialogs += ("I HAVE PROVIDED YOU "+key.upper(),)*4
         if "robot" in Ingredient.ingredient_dict[key]:
-            dialogs += tuple(Ingredient.ingredient_dict[key]["robot"])
+            for i in range(3):
+                dialogs += tuple(Ingredient.ingredient_dict[key]["robot"])
         self.dialog_text = random.choice(dialogs)
 
     def popped_up(self):
