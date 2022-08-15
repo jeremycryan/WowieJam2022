@@ -199,8 +199,9 @@ class Customer:
             return 60
         if Customer.COUNT == 3:
             return 30
-        scaling = 8
-        return 20 * ((3+scaling)/(Customer.COUNT+scaling)) + Customer.MISTAKE_HANDICAP
+        scaling = 10
+        ratio = (Customer.COUNT - 3)/scaling + 1
+        return 20 * 0.5**ratio + Customer.MISTAKE_HANDICAP
 
     @staticmethod
     def make_mistake():
